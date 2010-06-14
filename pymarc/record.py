@@ -173,8 +173,11 @@ class Record(object):
             else:
                 subfields = list()
                 subs = entry_data.split(SUBFIELD_INDICATOR)
-                first_indicator = subs[0][0]
-                second_indicator = subs[0][1]
+                if len(subs[0]) > 0:
+                    first_indicator = subs[0][0]
+                    second_indicator = subs[0][1]
+                else:
+                    first_indicator,second_indicator = None,None
                 for subfield in subs[1:]:
                     if len(subfield) == 0: 
                         continue
