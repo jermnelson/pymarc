@@ -11,7 +11,7 @@ except ImportError:
 class JsonTest(unittest.TestCase):
 
     def setUp(self):
-        self.reader = pymarc.MARCReader(file('test/test.dat'))
+        self.reader = pymarc.MARCReader(open('test/test.dat'))
         self._record = pymarc.Record()
         field = pymarc.Field(
             tag = '245',
@@ -49,7 +49,7 @@ class JsonTest(unittest.TestCase):
 
     def test_as_json_multiple(self):
         for record in self.reader:
-            self.assertTrue(basestring in record.as_json().__class__.__bases__)
+            self.assertTrue(str in record.as_json().__class__.__bases__)
             self.assertEquals(dict, json.loads(record.as_json()).__class__)
 
 def suite():

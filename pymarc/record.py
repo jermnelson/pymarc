@@ -22,7 +22,7 @@ except ImportError:
 try:
     # izip_longest first appeared in python 2.6
     # http://docs.python.org/library/itertools.html#itertools.izip_longest
-    from itertools import izip_longest
+    from itertools import zip_longest
 except ImportError:
     # itertools was introducted in python 2.3
     # we just define the required classes and functions
@@ -35,7 +35,7 @@ except ImportError:
         ``next`` (http://docs.python.org/library/functions.html#next)
         was introduced in python 2.6 - and if we are here
         (no ``izip_longest``), than we need to define this."""
-        return obj.next()
+        return next(obj)
 
     def izip_longest(*args, **kwds):
         """
@@ -142,7 +142,7 @@ class Record(object):
         self.__pos = 0
         return self
 
-    def next(self):
+    def __next__(self):
         if self.__pos >= len(self.fields):
             raise StopIteration
         self.__pos += 1 
@@ -230,11 +230,11 @@ class Record(object):
                 base_address + entry_offset + entry_length - 1]
 
             # assume controlfields are numeric; replicates ruby-marc behavior 
-            if entry_tag < '010' and entry_tag.isdigit():
+            if str(entry_tag) < '010' and str(entry_tag).isdigit():
                 field = Field(tag=entry_tag, data=entry_data)
             else:
                 subfields = list()
-                subs = entry_data.split(SUBFIELD_INDICATOR)
+                subs = str(entry_data).split(str(SUBFIELD_INDICATOR))
                 first_indicator = subs[0][0]
                 second_indicator = subs[0][1]
                 for subfield in subs[1:]:
@@ -278,7 +278,7 @@ class Record(object):
             field_data = field.as_marc()
             if self.leader[9] == 'a' or self.force_utf8:
               field_data = field_data.encode('utf-8')
-            fields += field_data
+            fields += str(field_data)
             if field.tag.isdigit():
                 directory += '%03d' % int(field.tag)
             else:
@@ -322,7 +322,7 @@ class Record(object):
                 _dict['fields'][field.tag] = {}
                 _dict['fields'][field.tag]['indicators'] = field.indicators
                 _dict['fields'][field.tag]['subfields'] = dict(
-                    izip_longest(*[iter(field.subfields)] * 2))
+                    zip_longest(*[iter(field.subfields)] * 2))
             else:
                 _dict['fields'][field.tag] = field.data
         return _dict
@@ -437,7 +437,7 @@ class Record(object):
         return None
 
 def map_marc8_record(r):
-    r.fields = map(map_marc8_field, r.fields)
+    r.fields = list(map(map_marc8_field, r.fields))
     l = list(r.leader)
     l[9] = 'a' # see http://www.loc.gov/marc/specifications/speccharucs.html
     r.leader = "".join(l)

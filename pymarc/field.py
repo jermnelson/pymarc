@@ -99,12 +99,12 @@ class Field(object):
             raise KeyError("no code '%s'" % code)
         num_code = len(self.subfields)/2
         while num_code >= 0:
-            if self.subfields[(num_code*2)-2] == code:
-                self.subfields[(num_code*2)-1] = value
+            if self.subfields[int((num_code*2)-2)] == code:
+                self.subfields[int((num_code*2)-1)] = value
                 break
             num_code -= 1
 
-    def next(self):
+    def __next__(self):
         "Needed for iteration."
         while self.__pos < len(self.subfields):
             subfield = (self.subfields[ self.__pos ],
@@ -199,8 +199,8 @@ class Field(object):
             return self.data
         fielddata = ''
         for subfield in self:
-	    if subfield[0] == '6':
-	    	continue
+            if subfield[0] == '6':
+                continue
             if not self.is_subject_field():
                 fielddata += ' %s' % subfield[1]
             else:
@@ -222,5 +222,5 @@ def map_marc8_field(f):
     if f.is_control_field():
         f.data = marc8_to_unicode(f.data)
     else:
-        f.subfields = map(marc8_to_unicode, f.subfields)
+        f.subfields = list(map(marc8_to_unicode, f.subfields))
     return f

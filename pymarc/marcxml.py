@@ -43,12 +43,12 @@ class XmlHandler(ContentHandler):
         if element == 'record':
             self._record = Record() 
         elif element == 'controlfield':
-            tag = attrs.getValue((None, u'tag'))
+            tag = attrs.getValue((None, 'tag'))
             self._field = Field(tag)
         elif element == 'datafield':
-            tag = attrs.getValue((None, u'tag'))
-            ind1 = attrs.getValue((None, u'ind1'))
-            ind2 = attrs.getValue((None, u'ind2'))
+            tag = attrs.getValue((None, 'tag'))
+            ind1 = attrs.getValue((None, 'ind1'))
+            ind2 = attrs.getValue((None, 'ind2'))
             self._field = Field(tag, [ind1, ind2])
         elif element == 'subfield':
             self._subfield_code = attrs[(None, 'code')]
@@ -59,9 +59,9 @@ class XmlHandler(ContentHandler):
 
         element = name[1]
         if self.normalize_form is not None:
-            text = unicodedata.normalize(self.normalize_form, u''.join(self._text))
+            text = unicodedata.normalize(self.normalize_form, ''.join(self._text))
         else:
-            text = u''.join(self._text)
+            text = ''.join(self._text)
 
         if element == 'record':
             self.process_record(self._record)
@@ -135,7 +135,7 @@ def record_to_xml(record, quiet=False, namespace=False):
     # TODO: maybe should set g0 and g1 appropriately using 066 $a and $b?
     marc8 = MARC8ToUnicode(quiet=quiet)
     def translate(data):
-        if type(data) == unicode: 
+        if type(data) == str: 
             return data
         else: 
             return marc8.translate(data)

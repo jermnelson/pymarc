@@ -1,7 +1,8 @@
-from cStringIO import StringIO
+from io import StringIO
 
 from pymarc import Record
 from pymarc.exceptions import RecordLengthInvalid
+import collections
 
 class Reader(object):
     """
@@ -62,12 +63,12 @@ class MARCReader(Reader):
         self.force_utf8 = force_utf8
         self.hide_utf8_warnings = hide_utf8_warnings
         self.utf8_handling = utf8_handling
-        if (hasattr(marc_target, "read") and callable(marc_target.read)):
+        if (hasattr(marc_target, "read") and isinstance(marc_target.read, collections.Callable)):
             self.file_handle = marc_target
         else: 
             self.file_handle = StringIO(marc_target)
 
-    def next(self):
+    def __next__(self):
         """
         To support iteration. 
         """
@@ -98,5 +99,5 @@ def map_records(f, *files):
     >>> map_records(print_title, file('marc.dat'))
     """
     for file in files:
-        map(f, MARCReader(file))
+        list(map(f, MARCReader(file)))
 

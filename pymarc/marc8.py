@@ -49,7 +49,7 @@ class MARC8ToUnicode:
     def translate(self, marc8_string):
         # don't choke on empty marc8_string
         if not marc8_string:
-            return u''
+            return ''
         uni_list = []
         combinings = []
         pos = 0
@@ -106,7 +106,7 @@ class MARC8ToUnicode:
                 
             if (code_point < 0x20 or
                 (code_point > 0x80 and code_point < 0xa0)):
-                uni = unichr(code_point)
+                uni = chr(code_point)
                 continue
 
             try:
@@ -117,7 +117,7 @@ class MARC8ToUnicode:
             except KeyError:
                 try:
                     uni = marc8_mapping.ODD_MAP[code_point]
-                    uni_list.append(unichr(uni))
+                    uni_list.append(chr(uni))
                     # we can short circuit because we know these mappings
                     # won't be involved in combinings.  (i hope?)
                     continue
@@ -130,15 +130,15 @@ class MARC8ToUnicode:
                 cflag = False
                 
             if cflag:
-                combinings.append(unichr(uni))
+                combinings.append(chr(uni))
             else:
-                uni_list.append(unichr(uni))
+                uni_list.append(chr(uni))
                 if len(combinings) > 0:
                     uni_list.extend(combinings)
                     combinings = []
 
         # what to do if combining chars left over?
-        uni_str = u"".join(uni_list)
+        uni_str = "".join(uni_list)
         
         # unicodedata.normalize not available until Python 2.3        
         if hasattr(unicodedata, 'normalize'):

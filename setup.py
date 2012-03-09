@@ -39,6 +39,6 @@ setup(
     packages = find_packages(),
     install_requires = install_requires,
     description = 'read, write and modify MARC bibliographic data',
-    classifiers = filter(None, classifiers.split('\n')),
+    classifiers = [_f for _f in classifiers.split('\n') if _f],
     test_suite = 'test',
 )
