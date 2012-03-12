@@ -14,6 +14,7 @@ class MARCReaderFileTest(unittest.TestCase):
         self.reader = pymarc.MARCReader(open('test/test.dat'))
 
     def test_iterator(self):
+        self.reader = pymarc.MARCReader(open('test/test.dat'))
         count = 0
         for record in self.reader:
             count += 1

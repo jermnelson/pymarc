@@ -65,7 +65,7 @@ class MARC8Test(TestCase):
         os.remove('test/foo')
 
     def test_reading_utf8_with_flag(self):
-        reader = MARCReader(open('test/utf8_with_leader_flag.dat'))
+        reader = MARCReader(open('test/utf8_with_leader_flag.dat','rb'))
         record = next(reader)
         self.assertEquals(type(record), Record)
         utitle = record['240']['a']

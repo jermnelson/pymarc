@@ -1,5 +1,5 @@
-from io import StringIO
-
+from io import StringIO,TextIOWrapper,BytesIO,BufferedReader
+import logging
 from pymarc import Record
 from pymarc.exceptions import RecordLengthInvalid
 import collections
@@ -57,16 +57,25 @@ class MARCReader(Reader):
         The constructor to which you can pass either raw marc or a file-like
         object. Basically the argument you pass in should be raw MARC in 
         transmission format or an object that responds to read().
+        
         """
         super(MARCReader, self).__init__()
         self.to_unicode = to_unicode
         self.force_utf8 = force_utf8
         self.hide_utf8_warnings = hide_utf8_warnings
         self.utf8_handling = utf8_handling
-        if (hasattr(marc_target, "read") and isinstance(marc_target.read, collections.Callable)):
-            self.file_handle = marc_target
-        else: 
-            self.file_handle = StringIO(marc_target)
+        if hasattr(marc_target,"buffer"):
+            self.file_handle = BufferedReader(marc_target.buffer)
+        ##if (hasattr(marc_target, "read") and isinstance(marc_target.read, collections.Callable)):
+        ##    self.file_handle = TextIOWrapper(marc_target.buffer)
+        ##    self.file_handle = BufferedReader(marc_target.buffer)
+        ##else: 
+        ##    self.file_handle = StringIO(marc_target)
+        else:
+            text_wrapper = TextIOWrapper(marc_target)
+            self.file_handle = BufferedReader(text_wrapper.buffer)
+            #self.file_handle = BytesIO(marc_target)
+        logging.error("SELF File handle type is %s" % type(self.file_handle))
 
     def __next__(self):
         """
