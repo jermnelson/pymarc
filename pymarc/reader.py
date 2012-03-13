@@ -12,6 +12,61 @@ class Reader(object):
         return self
 
 class MARCReader(Reader):
+
+    def __init__(self, marc_target, **kwargs):
+        """
+        An iterator class for reading a file of MARC21 records using Python 3 unicode 
+        and byte support. Following the concept of Unicode "sandwich" approach with 
+        explicit MARC file handling heuristics.
+  
+        :param marc_target: "file" like object or raw MARC byte-stream
+        :param to_unicode: Depreciated
+        :param force_utf8: Depreciated
+        :param hide_utf8_warnings: Boolean, shows any byte-to-unicode warnings
+        :param utf8_handling: One of these values ('strict', 'replace', 'xmlcharrefreplace' and 'ignore')
+        """
+        super(MARCReader, self).__init__()
+        if 'utf8_handling' in kwargs:
+            self.utf8_handling = kwargs.get('utf8_handling')
+        else:
+            self.utf8_handling = 'strict'
+        if 'hide_utf8_warnings' in kwargs:
+            self.hide_utf8_warnings = kwargs.get('hide_utf8_warnings')
+        else:
+            self.hide_utf8_warnings = False
+        if (hasattr(marc_target, "read") and isinstance(marc_target.read, collections.Callable)):
+            if type(marc_target) is BufferedReader:
+                self.byte_stream = marc_target
+            else:
+                # Gets name of marc_target, close file handle and opens in binary mode
+                filehandle_name = marc_target.name
+                marc_target.close()
+                self.byte_stream = open(filehandle_name,'rb')
+        else:
+            if hasattr(marc_target,'buffer'):
+                self.byte_stream = BufferedReader(marc_target)
+            else:
+                raw_bytes = b'' + marc_target.encode(encoding='ascii',
+                                                     errors=self.utf8_handling)
+                self.byte_stream = BytesIO(raw_bytes)
+
+
+    def __next__(self):
+        first5 = self.byte_stream.read(5)
+        logging.error("First five is %s" % first5)
+        if not first5:
+            raise StopIteration
+        if len(first5) < 5:
+            raise RecordLengthInvalid
+        length = int(first5)
+        chunk = self.byte_stream.read(length - 5)
+        chunk = first5 + chunk
+        record = Record(chunk, 
+                        hide_utf8_warnings=self.hide_utf8_warnings,
+                        utf8_handling=self.utf8_handling)
+        return record
+     
+class DepreciatedMARCReader(Reader):
     """
     An iterator class for reading a file of MARC21 records. 
 
@@ -65,15 +120,15 @@ class MARCReader(Reader):
         self.hide_utf8_warnings = hide_utf8_warnings
         self.utf8_handling = utf8_handling
         if hasattr(marc_target,"buffer"):
-            self.file_handle = BufferedReader(marc_target.buffer)
+            ##self.file_handle = BufferedReader(marc_target.buffer)
         ##if (hasattr(marc_target, "read") and isinstance(marc_target.read, collections.Callable)):
-        ##    self.file_handle = TextIOWrapper(marc_target.buffer)
+            text_wrapper = TextIOWrapper(marc_target)
         ##    self.file_handle = BufferedReader(marc_target.buffer)
         ##else: 
         ##    self.file_handle = StringIO(marc_target)
         else:
             text_wrapper = TextIOWrapper(marc_target)
-            self.file_handle = BufferedReader(text_wrapper.buffer)
+        self.file_handle = BufferedReader(text_wrapper.buffer)
             #self.file_handle = BytesIO(marc_target)
         logging.error("SELF File handle type is %s" % type(self.file_handle))
 

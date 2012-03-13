@@ -196,6 +196,12 @@ class Record(object):
         the scenes when you pass in a chunk of MARC data to it.
 
         """
+        # Convert marc to unicode if byte
+        if type(marc) != str:
+            try:
+                marc = marc.decode('utf8',errors=utf8_handling)
+            except UnicodeDecodeError as e:
+                marc = marc.decode('latin-1',errors=utf8_handling)
         # extract record leader
         self.leader = marc[0:LEADER_LEN]
         if len(self.leader) != LEADER_LEN: 
