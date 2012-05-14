@@ -1,4 +1,4 @@
-import re
+import re,logging
 
 from pymarc.exceptions import BaseAddressInvalid, RecordLeaderInvalid, \
         BaseAddressNotFound, RecordDirectoryInvalid, NoFieldsFound, \
@@ -198,6 +198,7 @@ class Record(object):
         """
         # Convert marc to unicode if byte
         if type(marc) != str:
+            logging.error("UTF-8 handling =%s" % utf8_handling)
             try:
                 marc = marc.decode('utf8',errors=utf8_handling)
             except UnicodeDecodeError as e:
@@ -240,9 +241,15 @@ class Record(object):
                 field = Field(tag=entry_tag, data=entry_data)
             else:
                 subfields = list()
-                subs = str(entry_data).split(str(SUBFIELD_INDICATOR))
-                first_indicator = subs[0][0]
-                second_indicator = subs[0][1]
+                #subs = str(entry_data).split(str(SUBFIELD_INDICATOR))
+                subs = entry_data.split(SUBFIELD_INDICATOR)
+
+                if len(subs[0]) < 2:
+                    logging.error('Subs[0] length must be > 2, %s %s %s' % (subs,entry_tag,entry_data))
+                    first_indicator,second_indicator = '0','0'
+                else:
+                    first_indicator = subs[0][0]
+                    second_indicator = subs[0][1]
                 for subfield in subs[1:]:
                     if len(subfield) == 0: 
                         continue

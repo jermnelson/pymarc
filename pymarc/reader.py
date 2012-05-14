@@ -1,5 +1,5 @@
 from io import StringIO,TextIOWrapper,BytesIO,BufferedReader
-import logging
+import logging,sys,traceback
 from pymarc import Record
 from pymarc.exceptions import RecordLengthInvalid
 import collections
@@ -53,7 +53,6 @@ class MARCReader(Reader):
 
     def __next__(self):
         first5 = self.byte_stream.read(5)
-        logging.error("First five is %s" % first5)
         if not first5:
             raise StopIteration
         if len(first5) < 5:
@@ -61,10 +60,22 @@ class MARCReader(Reader):
         length = int(first5)
         chunk = self.byte_stream.read(length - 5)
         chunk = first5 + chunk
-        record = Record(chunk, 
-                        hide_utf8_warnings=self.hide_utf8_warnings,
-                        utf8_handling=self.utf8_handling)
-        return record
+        try:
+            chunk = chunk.decode(encoding='utf-8',
+                                 errors=self.utf8_handling)
+        except TypeError:
+            logging.error("TypeError chunk type is %s" % type(chunk))
+        except:
+            logging.error("Cannot iterate, error=%s" % sys.exc_info()[0])
+        try:
+            record = Record(chunk, 
+                            hide_utf8_warnings=self.hide_utf8_warnings,
+                            utf8_handling=self.utf8_handling)
+            return record
+        #except IndexError:
+        #    logging.error("Chunk length=%s type=%s" % (len(chunk),type(chunk)))             
+        except:
+            traceback.print_exc(file=sys.stderr)
      
 class DepreciatedMARCReader(Reader):
     """
